@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phone Renew | ระบบบันทึกรายรับรายจ่าย</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--g1:#0f9d7a;--g2:#0b6e8a;--bg:#f2f7f6;--card:#fff;--tx:#1d2b2a;--mu:#6b7c7a;--bd:#dbe6e4;--ok:#16a34a;--no:#dc2626;--wa:#d97706}
+*{box-sizing:border-box;margin:0}
+body{font-family:'Noto Sans Thai','Sarabun',Tahoma,sans-serif;background:var(--bg);color:var(--tx);line-height:1.5;padding-bottom:40px}
+header{background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;padding:22px 16px 70px}
+.wrap{max-width:980px;margin:0 auto}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand h1{font-size:1.6rem;font-weight:700}
+.brand p{opacity:.85;font-size:.9rem}
+.datebox{background:rgba(255,255,255,.18);padding:8px 12px;border-radius:12px;font-size:.85rem}
+.datebox input{background:#fff;border:0;border-radius:8px;padding:6px 8px;font:inherit;color:var(--tx);margin-left:6px}
+main{margin-top:-50px;padding:0 16px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{background:var(--card);border-radius:16px;padding:14px 16px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.stat small{color:var(--mu);font-size:.8rem}
+.stat b{display:block;font-size:1.35rem;margin-top:2px}
+.stat.in b{color:var(--ok)}.stat.out b{color:var(--no)}.stat.pf b{color:var(--g2)}
+.stat span{font-size:.75rem;color:var(--mu)}
+.tabs{display:flex;gap:8px;margin:20px 0 12px;flex-wrap:wrap}
+.tab{flex:1;min-width:130px;border:0;padding:12px;border-radius:12px;background:#e3eeec;color:var(--mu);font:inherit;font-weight:500;cursor:pointer;transition:.2s}
+.tab.on{background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;box-shadow:0 4px 12px rgba(15,157,122,.35)}
+.panel{display:none;background:var(--card);border-radius:18px;padding:20px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.panel.on{display:block}
+.panel h2{font-size:1.1rem;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.f{display:flex;flex-direction:column;gap:4px}
+.f.w2{grid-column:span 2}.f.w3{grid-column:span 3}
+label{font-size:.82rem;color:var(--mu);font-weight:500}
+input,select,textarea{font:inherit;border:1.5px solid var(--bd);border-radius:10px;padding:9px 11px;background:#fff;color:var(--tx);width:100%}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--g1);box-shadow:0 0 0 3px rgba(15,157,122,.15)}
+textarea{resize:vertical;min-height:60px}
+.total{margin-top:14px;padding:12px 16px;border-radius:12px;background:#e8f6f2;display:flex;justify-content:space-between;align-items:center;font-weight:500}
+.total b{font-size:1.4rem;color:var(--g2)}
+.btn{margin-top:14px;width:100%;border:0;padding:13px;border-radius:12px;font:inherit;font-weight:700;font-size:1rem;color:#fff;cursor:pointer;background:linear-gradient(135deg,var(--g1),var(--g2));transition:.2s}
+.btn.red{background:linear-gradient(135deg,#ef4444,#b91c1c)}
+.btn:hover{filter:brightness(1.06)}.btn:disabled{opacity:.55;cursor:wait}
+.tw{overflow-x:auto;margin-bottom:22px}
+table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:560px}
+th{background:#eef5f4;text-align:left;padding:9px 10px;font-weight:500;color:var(--mu)}
+td{padding:9px 10px;border-bottom:1px solid var(--bd)}
+td.n,th.n{text-align:right}
+.empty{text-align:center;color:var(--mu);padding:18px}
+.sub{font-weight:700;margin:6px 0 8px}
+.tdsel{padding:5px 8px;font-size:.82rem;border-radius:8px}
+.warn{display:none;background:#fff7e0;border:1px solid #f1d38a;color:#8a5a00;padding:12px 16px;border-radius:12px;margin-bottom:14px;font-size:.9rem}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,30px);background:#1d2b2a;color:#fff;padding:12px 20px;border-radius:12px;opacity:0;transition:.3s;z-index:9;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.err{background:var(--no)}
+@media(max-width:760px){.cards{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr 1fr}.f.w3{grid-column:span 2}}
+@media(max-width:480px){.grid{grid-template-columns:1fr}.f.w2,.f.w3{grid-column:span 1}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap top">
+    <div class="brand">
+      <h1>📱 Phone Renew</h1>
+      <p>ฟื้นฟูมือถือ · ระบบบันทึกรายรับรายจ่ายประจำวัน</p>
+    </div>
+    <div class="datebox">ดูข้อมูลวันที่ <input type="date" id="viewDate"></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="warn" id="warn">⚠️ ยังไม่ได้ตั้งค่า <b>SCRIPT_URL</b> กรุณาเปิดไฟล์ index.html แล้ววาง URL เว็บแอปของ Google Apps Script ในบรรทัด <code>const SCRIPT_URL</code></div>
+
+  <section class="cards">
+    <div class="stat in"><small>รายรับวันนี้</small><b id="sIn">0.00</b><span>บาท</span></div>
+    <div class="stat out"><small>รายจ่ายวันนี้</small><b id="sOut">0.00</b><span>บาท</span></div>
+    <div class="stat pf"><small>กำไร / ขาดทุน</small><b id="sPf">0.00</b><span>เงินสด <i id="sCash">0</i> · โอน <i id="sTr">0</i></span></div>
+    <div class="stat"><small>จำนวนงานที่รับ</small><b id="sJobs">0</b><span>งาน</span></div>
+  </section>
+
+  <nav class="tabs">
+    <button class="tab on" data-t="pIn">💰 บันทึกรายรับ</button>
+    <button class="tab" data-t="pOut">🧾 บันทึกรายจ่าย</button>
+    <button class="tab" data-t="pList">📋 รายการประจำวัน</button>
+  </nav>
+
+  <!-- รายรับ -->
+  <section class="panel on" id="pIn">
+    <h2>บันทึกรายรับ (งานซ่อม)</h2>
+    <form id="fIn">
+      <div class="grid">
+        <div class="f"><label>วันที่</label><input type="date" name="date" required></div>
+        <div class="f"><label>ชื่อลูกค้า</label><input name="customer" placeholder="เช่น คุณสมชาย" required></div>
+        <div class="f"><label>เบอร์โทร</label><input name="phone" inputmode="tel" placeholder="08x-xxx-xxxx"></div>
+        <div class="f"><label>ยี่ห้อ/รุ่นมือถือ</label><input name="model" placeholder="เช่น Samsung A54" required></div>
+        <div class="f"><label>อาการเสีย</label><input name="problem" placeholder="เช่น จอแตก"></div>
+        <div class="f"><label>ประเภทงาน</label><select name="jobType"></select></div>
+        <div class="f"><label>ค่าอะไหล่ (บาท)</label><input type="number" name="parts" min="0" step="any" value="0"></div>
+        <div class="f"><label>ค่าแรง (บาท)</label><input type="number" name="labor" min="0" step="any" value="0"></div>
+        <div class="f"><label>ส่วนลด (บาท)</label><input type="number" name="discount" min="0" step="any" value="0"></div>
+        <div class="f"><label>วิธีชำระเงิน</label><select name="payment"></select></div>
+        <div class="f"><label>สถานะงาน</label><select name="status"></select></div>
+        <div class="f"><label>ผู้รับงาน</label><input name="staff" placeholder="ชื่อช่าง/พนักงาน"></div>
+        <div class="f w3"><label>หมายเหตุ</label><textarea name="note" placeholder="เช่น รับประกัน 30 วัน"></textarea></div>
+      </div>
+      <div class="total"><span>ยอดรวมสุทธิ</span><b id="tot">0.00 บาท</b></div>
+      <button class="btn" type="submit">บันทึกรายรับ</button>
+    </form>
+  </section>
+
+  <!-- รายจ่าย -->
+  <section class="panel" id="pOut">
+    <h2>บันทึกรายจ่าย</h2>
+    <form id="fOut">
+      <div class="grid">
+        <div class="f"><label>วันที่</label><input type="date" name="date" required></div>
+        <div class="f"><label>หมวดรายจ่าย</label><select name="category"></select></div>
+        <div class="f"><label>จำนวนเงิน (บาท)</label><input type="number" name="amount" min="0" step="any" required></div>
+        <div class="f w2"><label>รายละเอียด</label><input name="detail" placeholder="เช่น ซื้อจอ Samsung A54" required></div>
+        <div class="f"><label>ร้านค้า/ผู้ขาย</label><input name="vendor" placeholder="เช่น ร้านอะไหล่ ABC"></div>
+        <div class="f"><label>วิธีชำระเงิน</label><select name="payment"></select></div>
+        <div class="f"><label>ผู้บันทึก</label><input name="recorder" placeholder="ชื่อพนักงาน"></div>
+        <div class="f"><label>หมายเหตุ</label><input name="note"></div>
+      </div>
+      <button class="btn red" type="submit">บันทึกรายจ่าย</button>
+    </form>
+  </section>
+
+  <!-- รายการ -->
+  <section class="panel" id="pList">
+    <h2>รายการของวันที่เลือก</h2>
+    <p class="sub">💰 รายรับ (งานซ่อม)</p>
+    <div class="tw"><table>
+      <thead><tr><th>เลขที่ใบงาน</th><th>ลูกค้า</th><th>รุ่น</th><th>อาการ</th><th>ชำระ</th><th class="n">ยอดรวม</th><th>สถานะ</th></tr></thead>
+      <tbody id="tbIn"></tbody>
+    </table></div>
+    <p class="sub">🧾 รายจ่าย</p>
+    <div class="tw"><table>
+      <thead><tr><th>เลขที่</th><th>หมวด</th><th>รายละเอียด</th><th>ร้านค้า</th><th>ชำระ</th><th class="n">จำนวนเงิน</th></tr></thead>
+      <tbody id="tbOut"></tbody>
+    </table></div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== ตั้งค่า: วาง URL เว็บแอปของ Google Apps Script ที่นี่ =====
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzVYemkY3LOBJvkooML57-D8jXQZfFWROs3lVzVcpaCAo5bjjqNXlK6urS5_MrmmK6hCg/exec";
+
+const JOB_TYPES = ['เปลี่ยนจอ','เปลี่ยนแบตเตอรี่','เปลี่ยนช่องชาร์จ','ซ่อมบอร์ด','ลงโปรแกรม','ซ่อมน้ำเข้า','อื่นๆ'];
+const PAYMENTS = ['เงินสด','โอน'];
+const STATUSES = ['รอซ่อม','กำลังซ่อม','ซ่อมเสร็จ','ส่งมอบแล้ว'];
+const CATEGORIES = ['ซื้ออะไหล่','ค่าเช่า','ค่าไฟ','ค่าน้ำ','ค่าอินเทอร์เน็ต','เงินเดือน','อื่นๆ'];
+
+const $ = s => document.querySelector(s);
+const ready = () => /^https?:\/\//.test(SCRIPT_URL);
+const fmt = n => Number(n || 0).toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+
+function fillSelect(sel, list) { sel.innerHTML = list.map(v => `<option>${v}</option>`).join(''); }
+
+function toast(msg, err) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (err ? ' err' : '');
+  clearTimeout(toast.t);
+  toast.t = setTimeout(() => t.className = 'toast', 2800);
+}
+
+// ส่งข้อมูล (POST) และดึงข้อมูล (GET) กับ Apps Script
+async function post(body) {
+  const r = await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || 'เกิดข้อผิดพลาด');
+  return j.result;
+}
+async function get(action, date) {
+  const r = await fetch(`${SCRIPT_URL}?action=${action}&date=${encodeURIComponent(date)}`);
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || 'เกิดข้อผิดพลาด');
+  return j.data;
+}
+
+// ===== แสดงผล =====
+function renderSummary(s) {
+  $('#sIn').textContent = fmt(s.income);
+  $('#sOut').textContent = fmt(s.expense);
+  $('#sPf').textContent = fmt(s.profit);
+  $('#sCash').textContent = fmt(s.cash);
+  $('#sTr').textContent = fmt(s.transfer);
+  $('#sJobs').textContent = s.jobs || 0;
+}
+
+function renderIncome(rows) {
+  $('#tbIn').innerHTML = rows.length ? rows.map(r => {
+    const id = r['เลขที่ใบงาน'];
+    const opts = STATUSES.map(v => `<option${v === r['สถานะงาน'] ? ' selected' : ''}>${v}</option>`).join('');
+    return `<tr><td>${esc(id)}</td><td>${esc(r['ชื่อลูกค้า'])}</td><td>${esc(r['ยี่ห้อ/รุ่นมือถือ'])}</td><td>${esc(r['อาการเสีย'])}</td><td>${esc(r['วิธีชำระเงิน'])}</td><td class="n">${fmt(r['ยอดรวม'])}</td><td><select class="tdsel" data-id="${esc(id)}">${opts}</select></td></tr>`;
+  }).join('') : '<tr><td colspan="7" class="empty">ยังไม่มีรายรับในวันนี้</td></tr>';
+}
+
+function renderExpense(rows) {
+  $('#tbOut').innerHTML = rows.length ? rows.map(r =>
+    `<tr><td>${esc(r['เลขที่รายการ'])}</td><td>${esc(r['หมวดรายจ่าย'])}</td><td>${esc(r['รายละเอียด'])}</td><td>${esc(r['ร้านค้า/ผู้ขาย'])}</td><td>${esc(r['วิธีชำระเงิน'])}</td><td class="n">${fmt(r['จำนวนเงิน'])}</td></tr>`
+  ).join('') : '<tr><td colspan="6" class="empty">ยังไม่มีรายจ่ายในวันนี้</td></tr>';
+}
+
+async function loadAll() {
+  if (!ready()) return;
+  const d = $('#viewDate').value || today();
+  try {
+    const [s, i, e] = await Promise.all([get('summary', d), get('income', d), get('expense', d)]);
+    renderSummary(s); renderIncome(i); renderExpense(e);
+  } catch (err) { toast('โหลดข้อมูลไม่สำเร็จ: ' + err.message, true); }
+}
+
+// ===== ฟอร์ม =====
+function calcTotal() {
+  const f = $('#fIn');
+  const t = (+f.parts.value || 0) + (+f.labor.value || 0) - (+f.discount.value || 0);
+  $('#tot').textContent = fmt(t) + ' บาท';
+}
+
+async function submitForm(form, action, btnText) {
+  if (!ready()) { toast('กรุณาตั้งค่า SCRIPT_URL ก่อน', true); return; }
+  const btn = form.querySelector('.btn');
+  btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
+  try {
+    const data = Object.fromEntries(new FormData(form).entries());
+    const res = await post({ action, ...data });
+    toast('บันทึกสำเร็จ ' + (res.jobId || res.expenseId || '') + ' ✅');
+    const keep = form.date.value;
+    form.reset(); form.date.value = keep; calcTotal();
+    loadAll();
+  } catch (err) { toast('บันทึกไม่สำเร็จ: ' + err.message, true); }
+  btn.disabled = false; btn.textContent = btnText;
+}
+
+// ===== เริ่มต้น =====
+fillSelect($('#fIn [name=jobType]'), JOB_TYPES);
+fillSelect($('#fIn [name=payment]'), PAYMENTS);
+fillSelect($('#fIn [name=status]'), STATUSES);
+fillSelect($('#fOut [name=category]'), CATEGORIES);
+fillSelect($('#fOut [name=payment]'), PAYMENTS);
+
+$('#viewDate').value = today();
+document.querySelectorAll('input[name=date]').forEach(i => i.value = today());
+if (!ready()) $('#warn').style.display = 'block';
+
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tab, .panel').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); $('#' + b.dataset.t).classList.add('on');
+});
+
+$('#viewDate').onchange = loadAll;
+['parts', 'labor', 'discount'].forEach(n => $('#fIn [name=' + n + ']').oninput = calcTotal);
+$('#fIn').onsubmit = e => { e.preventDefault(); submitForm(e.target, 'addIncome', 'บันทึกรายรับ'); };
+$('#fOut').onsubmit = e => { e.preventDefault(); submitForm(e.target, 'addExpense', 'บันทึกรายจ่าย'); };
+
+$('#tbIn').onchange = async e => {
+  if (!e.target.dataset.id) return;
+  try {
+    await post({ action: 'updateStatus', jobId: e.target.dataset.id, status: e.target.value });
+    toast('อัปเดตสถานะแล้ว ✅');
+  } catch (err) { toast('อัปเดตไม่สำเร็จ: ' + err.message, true); loadAll(); }
+};
+
+calcTotal();
+loadAll();
+</script>
+</body>
+</html>
